@@ -91,3 +91,104 @@ Menu paths are written in bold and use carets to navigate submenus. Example: **A
 ---
 
 Now that you know how this guide works, it's time to get to know the foundation of React Native: [Native Components](intro-react-native-components.md).
+import React, { useEffect, useState } from 'react';
+const t = {id: uid('t_'), title: newTaskTitle.trim(), description: newTaskDesc.trim(), status: 'todo', assignees: newTaskAssignee? [newTaskAssignee] : []};
+setState(prev=> ({...prev, tasks: [...prev.tasks, t]}));
+setNewTaskTitle(''); setNewTaskDesc(''); setNewTaskAssignee('');
+}
+
+
+// Drag & drop handlers (simple)
+function onDragStart(e, taskId){
+e.dataTransfer.setData('text/plain', taskId);
+}
+function onDragOver(e){ e.preventDefault(); }
+function onDrop(e, newStatus){
+const id = e.dataTransfer.getData('text/plain');
+setState(prev=> ({...prev, tasks: prev.tasks.map(t=> t.id===id ? {...t, status: newStatus} : t)}));
+}
+
+
+const cols = [
+{key: 'todo', title: 'Do zrobienia'},
+{key: 'inprogress', title: 'W trakcie'},
+{key: 'done', title: 'Zrobione'},
+];
+
+
+return (
+<div className="min-h-screen bg-slate-100 p-6">
+<div className="max-w-7xl mx-auto">
+<Header onOpenAddMember={()=>setAddOpen(true)} />
+
+
+<div className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+<div className="lg:col-span-1">
+<MemberList members={state.members} onSelect={(m)=> setSelectedMember(m)} />
+<div className="mt-4 p-4 bg-white border rounded-lg">
+<h4 className="font-semibold mb-2">Nowe zadanie</h4>
+<input value={newTaskTitle} onChange={(e)=>setNewTaskTitle(e.target.value)} placeholder="Tytuł" className="w-full p-2 border rounded mb-2" />
+<input value={newTaskAssignee} onChange={(e)=>setNewTaskAssignee(e.target.value)} placeholder="Przypisany (imię)" className="w-full p-2 border rounded mb-2" />
+<textarea value={newTaskDesc} onChange={(e)=>setNewTaskDesc(e.target.value)} placeholder="Opis" className="w-full p-2 border rounded mb-2" />
+<button onClick={addTask} className="w-full py-2 bg-emerald-500 text-white rounded">Dodaj zadanie</button>
+</div>
+</div>
+
+
+<div className="lg:col-span-3">
+<div className="flex gap-4">
+{cols.map(c=> (
+<div key={c.key} className="flex-1">
+<Column
+title={c.title}
+tasks={state.tasks.filter(t=>t.status===c.key)}
+onDragOver={onDragOver}
+onDrop={(e)=>onDrop(e, c.key)}
+onDragStart={onDragStart}
+/>
+</div>
+))}
+</div>
+</div>
+</div>
+
+
+{/* Member detail / add modal */}
+{isAddOpen && (
+<div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+<div className="w-full max-w-md bg-white rounded-lg p-6">
+<h3 className="text-lg font-semibold mb-3">Dodaj członka</h3>
+<input value={newMemberName} onChange={(e)=>setNewMemberName(e.target.value)} placeholder="Imię i nazwisko" className="w-full p-2 border rounded mb-2" />
+<input value={newMemberRole} onChange={(e)=>setNewMemberRole(e.target.value)} placeholder="Rola (np. Frontend)" className="w-full p-2 border rounded mb-4" />
+<div className="flex gap-2 justify-end">
+<button onClick={()=>setAddOpen(false)} className="px-3 py-2">Anuluj</button>
+<button onClick={addMember} className="px-3 py-2 bg-indigo-600 text-white rounded">Dodaj</button>
+</div>
+</div>
+</div>
+)}
+
+
+{selectedMember && (
+<div className="fixed bottom-6 right-6 w-80 bg-white border rounded-lg p-4 shadow-lg">
+<div className="flex items-start justify-between">
+<div>
+<div className="text-lg font-semibold">{selectedMember.name}</div>
+<div className="text-sm text-slate-500">{selectedMember.role}</div>
+</div>
+<div>
+<button onClick={()=> removeMember(selectedMember.id)} className="text-sm text-red-600">Usuń</button>
+</div>
+</div>
+<div className="mt-3 text-xs text-slate-500">Kliknij poza kartą aby zamknąć</div>
+<div className="mt-3 flex justify-end">
+<button onClick={()=> setSelectedMember(null)} className="px-3 py-1 rounded bg-slate-100">Zamknij</button>
+</div>
+</div>
+)}
+
+
+</div>
+</div>
+);
+}
